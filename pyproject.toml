@@ -1,5 +1,5 @@
 [project]
-name = "rpad-my-package"
+name = "rpad-core"
 version = "0.1.0"
 description = "A Python Package Template"
 readme = "README.md"

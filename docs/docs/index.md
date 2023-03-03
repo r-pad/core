@@ -1,4 +1,4 @@
-# my_package
+# core
 
 Some sample text for the website.
 
