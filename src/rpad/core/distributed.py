@@ -32,7 +32,6 @@ class Seedable(Protocol):
         Returns:
             Any: Can return anything.
         """
-        ...
 
 
 def _run_fn(
@@ -71,7 +70,9 @@ def _run_fn(
     return result, completed
 
 
-def _init_proc(q, proc_start, n_workers, n_proc_per_worker):
+def _init_proc(
+    q, proc_start, n_workers, n_proc_per_worker, init_fn=None, init_args=None
+):
     """Process initializer, handles setting processor affinity on Linux."""
     worker_num = q.get(timeout=5)
     if sys.platform == "linux":
@@ -85,16 +86,22 @@ def _init_proc(q, proc_start, n_workers, n_proc_per_worker):
     __worker_num = worker_num
     __queue = q
 
+    # Initialize.
+    if init_fn is not None:
+        init_fn(*init_args)
+
 
 def distributed_eval(
     fn: Seedable,
     kwargs_list: List[Dict],
+    init_fn: Optional[Callable] = None,
+    init_args: Optional[Tuple] = None,
     pre_fn: Optional[Seedable] = None,
     post_fn: Optional[Callable] = None,
     n_workers: int = 30,
     n_proc_per_worker: int = 2,
     proc_start: int = 0,
-    seed: int = 123456,
+    seed: Optional[int] = None,
 ) -> Tuple[List[Any], List[bool]]:
     """Runs a distributed eval of a function across multiple processes. Attempts to do so
     deterministically, with a seed which gets passed around.
@@ -107,7 +114,7 @@ def distributed_eval(
         n_workers (int, optional): Number of workers to distribute. Defaults to 30.
         n_proc_per_worker (int, optional): Number of cores to allocate per worker. Defaults to 2.
         proc_start (int, optional): Which processor to start at (i.e. if you want to avoid certain cores...). Defaults to 0.
-        seed (int, optional): The initial random seed, which will be branched. Defaults to 123456.
+        seed (int, optional): The initial random seed, which will be branched.
 
     Returns:
         Tuple[List[Any], List[bool]]:
@@ -140,7 +147,14 @@ def distributed_eval(
             with cf.ProcessPoolExecutor(
                 max_workers=n_workers,
                 initializer=_init_proc,
-                initargs=(queue, proc_start, n_workers, n_proc_per_worker),
+                initargs=(
+                    queue,
+                    proc_start,
+                    n_workers,
+                    n_proc_per_worker,
+                    init_fn,
+                    init_args,
+                ),
                 mp_context=mp_context,
             ) as executor:
                 futures = {
