@@ -8,7 +8,10 @@ license = {file = "LICENSE.txt"}
 authors = [
   {email = "baeisner@andrew.cmu.edu", name = "Ben Eisner"}
 ]
-dependencies = []
+dependencies = [
+  "numpy",
+  "tqdm",
+]
 
 [build-system]
 requires = [
@@ -28,6 +31,7 @@ develop = [
   "autoflake",
   "pre-commit",
   "jupyterlab",
+  "types-tqdm",
 ]
 build_docs = [
   "mkdocs-material",
