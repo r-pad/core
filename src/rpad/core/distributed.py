@@ -136,13 +136,13 @@ def distributed_eval(
                 completeds.append(completed)
                 pbar.update(1)
         else:
-            # Construct a multiprocessing queue to pass around, containing the worker ids.
-            queue: multiprocessing.Queue = multiprocessing.Queue()
-            for i in range(n_workers):
-                queue.put(i)
-
             # Gotta spawn.
             mp_context = multiprocessing.get_context("spawn")
+
+            # Construct a multiprocessing queue to pass around, containing the worker ids.
+            queue: multiprocessing.Queue = mp_context.Queue()
+            for i in range(n_workers):
+                queue.put(i)
 
             with cf.ProcessPoolExecutor(
                 max_workers=n_workers,
