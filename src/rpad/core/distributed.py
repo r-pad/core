@@ -39,6 +39,7 @@ def _run_fn(
     args: Tuple[Dict, np.random.SeedSequence],
     pre_fn: Optional[Seedable] = None,
     post_fn: Optional[Callable] = None,
+    debug: bool = False,
 ) -> Tuple[Optional[Any], bool]:
     """The function runner"""
     kwargs, seed = args
@@ -55,9 +56,11 @@ def _run_fn(
         result = fn(**kwargs)
         completed = True
     except Exception as e:
-        logging.error(f"encountered an error: {e}")
+        logging.error(f"encountered an error: {type(e).__name__}:{e}")
         completed = False
         result = None
+        if debug:
+            raise e
 
     global __worker_num, __queue
     if __queue:
@@ -130,8 +133,11 @@ def distributed_eval(
     with tqdm.tqdm(total=len(kwargs_list)) as pbar:
         # Case where we aren't doing multiprocessing.
         if n_workers == 0:
+            if init_fn is not None:
+                init_fn(*init_args)
+
             for kwargs, child_seed in zip(kwargs_list, child_seeds):
-                result, completed = _run_fn(fn, (kwargs, child_seed))
+                result, completed = _run_fn(fn, (kwargs, child_seed), debug=True)
                 results.append(result)
                 completeds.append(completed)
                 pbar.update(1)
