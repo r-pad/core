@@ -134,7 +134,7 @@ def distributed_eval(
         # Case where we aren't doing multiprocessing.
         if n_workers == 0:
             if init_fn is not None:
-                init_fn(*init_args)
+                init_fn(*init_args) if init_args else init_fn()
 
             for kwargs, child_seed in zip(kwargs_list, child_seeds):
                 result, completed = _run_fn(fn, (kwargs, child_seed), debug=True)
