@@ -105,9 +105,13 @@ def distributed_eval(
     n_proc_per_worker: int = 2,
     proc_start: int = 0,
     seed: Optional[int] = None,
+    logfile: Optional[str] = None,
 ) -> Tuple[List[Any], List[bool]]:
     """Runs a distributed eval of a function across multiple processes. Attempts to do so
     deterministically, with a seed which gets passed around.
+
+    NOTE: kwargs_list needs to be in the same order for full reproducibility, in the event of
+    random seeds.
 
     Args:
         fn (Seedable): The function to run.
@@ -118,6 +122,7 @@ def distributed_eval(
         n_proc_per_worker (int, optional): Number of cores to allocate per worker. Defaults to 2.
         proc_start (int, optional): Which processor to start at (i.e. if you want to avoid certain cores...). Defaults to 0.
         seed (int, optional): The initial random seed, which will be branched.
+        logfile (str, optional): A file to dump out the parameters / seed combination which was called.
 
     Returns:
         Tuple[List[Any], List[bool]]:
@@ -163,14 +168,20 @@ def distributed_eval(
                 ),
                 mp_context=mp_context,
             ) as executor:
+                joint_args = list(zip(kwargs_list, child_seeds))
+
+                if logfile is not None:
+                    with open(logfile, "w") as f:
+                        js = [f"%s: {cs}" % kwa for kwa, cs in joint_args]
+                        s = "\n".join(js)
+                        f.write(s)
+
                 futures = {
                     executor.submit(
                         functools.partial(_run_fn, fn, pre_fn=pre_fn, post_fn=post_fn),
                         (kwargs, child_seed),
                     ): i
-                    for i, (kwargs, child_seed) in enumerate(
-                        zip(kwargs_list, child_seeds)
-                    )
+                    for i, (kwargs, child_seed) in enumerate(joint_args)
                 }
                 result_dict = {}
                 completed_dict = {}
