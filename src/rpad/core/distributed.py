@@ -83,7 +83,10 @@ def _init_proc(
         n = worker_num
         N = n_workers * n_proc_per_worker
         procs = [s + (n * n_proc_per_worker + i) % N for i in range(n_proc_per_worker)]
-        os.sched_setaffinity(os.getpid(), procs)
+        try:
+            os.sched_setaffinity(os.getpid(), procs)
+        except OSError as e:
+            logging.error(f"failed to set affinity: {e}")
 
     global __worker_num, __queue
     __worker_num = worker_num
