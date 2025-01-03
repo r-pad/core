@@ -174,7 +174,11 @@ def execute_command_chain_on_node(node_name, commands, username=None, local=Fals
 def execute_command_on_node(node_name, command, username=None, local=False):
     # If we're running this locally on autobot, no need to double-ssh.
     if local:
-        raise ValueError("Not supported yet")
+        cmd = ["ssh", node_name, command]
+        if DEBUG:
+            logging.info(" ".join(cmd))
+        output = subprocess.check_output(cmd, text=True)
+        return output
     else:
         if username is None:
             raise ValueError("username must be provided if local=True")
