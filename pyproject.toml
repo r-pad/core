@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.6"
 license = { file = "LICENSE.txt" }
 authors = [{ email = "baeisner@andrew.cmu.edu", name = "Ben Eisner" }]
-dependencies = ["numpy", "pandas", "tqdm"]
+dependencies = ["numpy", "pandas", "tqdm", "typer"]
 
 [build-system]
 requires = ["setuptools >= 62.3.2", "setuptools-scm", "wheel"]
