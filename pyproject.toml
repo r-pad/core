@@ -23,6 +23,7 @@ develop = [
     "pre-commit",
     "jupyterlab",
     "types-tqdm",
+    "pandas-stubs",
 ]
 build_docs = ["mkdocs-material", "mkdocstrings[python]"]
 
