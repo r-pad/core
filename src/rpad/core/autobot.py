@@ -5,6 +5,7 @@ Usage:
     python autobot.py all_available --gpu_type rtx2080
     python autobot.py available --gpu_type rtx2080 --num_gpus 2
 """
+
 import logging
 import subprocess
 from enum import Enum
@@ -36,6 +37,7 @@ NODE_INFO = {
     "autobot-1-14": {"RTX_3080_Ti": 8},
     "autobot-1-18": {"RTX_A6000": 8},
 }
+
 
 # GPU type enum:
 class GPUType(str, Enum):
@@ -132,9 +134,9 @@ def safe_merge(usage_df, pid_usage_df, user_map_df):
     # Merge everything.
     user_map_df = user_map_df.set_index("pid")
     pid_usage_df["username"] = pid_usage_df["pid"].apply(
-        lambda pid: user_map_df.loc[pid]["username"]
-        if pid in user_map_df.index
-        else "unknown"
+        lambda pid: (
+            user_map_df.loc[pid]["username"] if pid in user_map_df.index else "unknown"
+        )
     )
     process_df = pid_usage_df
     process_df = pd.merge(usage_df, process_df, on="gpu_uuid")
